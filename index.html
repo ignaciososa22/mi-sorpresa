@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Mi Sorpresa</title>
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+    }
+
+    /* Canvas de lluvia por detrás */
+    #rain-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none; /* no interfiere con clics */
+      z-index: 1;
+    }
+
+    body {
+      /* Fallback sólido */
+      background-color: #75b9ca;
+
+      /* Gradiente pastel encima */
+      background-image: linear-gradient(135deg,
+                        #a8b8a9 0%,    /* verde menta suave */      
+                        #4338a1 50%    /* azul muy suave */
+                      );
+      background-size: 300% 300%;
+      animation: gradientBG 30s ease infinite;
+
+      perspective: 800px;
+      z-index: 2; /* para quedar sobre el canvas */
+    }
+
+    .foto {
+      position: absolute;
+      width: 500px;
+      height: 500px;
+      object-fit: cover;
+      border-radius: 8px;
+      box-shadow: 0 0 12px rgba(0,0,0,0.4);
+      z-index: 3;
+    }
+
+    .mensaje {
+      position: absolute;
+      font-weight: bold;
+      font-family: sans-serif;
+      font-size: 2em;
+      color: #7c1d94;
+      text-shadow: 0 0 8px rgba(0,0,0,0.7);
+      white-space: nowrap;
+      pointer-events: none;
+      z-index: 3;
+    }
+
+    @keyframes gradientBG {
+      0%   { background-position:   0%   0%; }
+      50%  { background-position: 100% 100%; }
+      100% { background-position:   0%   0%; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Canvas para lluvia -->
+  <canvas id="rain-canvas"></canvas>
+
+  <script>
+    // ————— Código de lluvia —————
+    const canvas = document.getElementById('rain-canvas');
+    const ctx = canvas.getContext('2d');
+
+    let width, height;
+    function resizeCanvas() {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    // Parámetros de las gotas
+    const numDrops = 300;          // puedes subir/bajar para más/menos gotas
+    const drops = [];
+
+    class Drop {
+      constructor() {
+        this.reset();
+      }
+      reset() {
+        this.x = Math.random() * width;
+        this.y = Math.random() * -height;
+        this.len = 10 + Math.random() * 20;
+        this.speed = 4 + Math.random() * 4;
+        this.opacity = 0.1 + Math.random() * 0.2;
+      }
+      fall() {
+        this.y += this.speed;
+        if (this.y > height) this.reset();
+      }
+      draw() {
+        ctx.beginPath();
+        ctx.moveTo(this.x, this.y);
+        ctx.lineTo(this.x, this.y + this.len);
+        ctx.strokeStyle = `rgba(255,255,255,${this.opacity})`; // blanca semi-transparente
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+    }
+
+    for (let i = 0; i < numDrops; i++) {
+      drops.push(new Drop());
+    }
+
+    function animateRain() {
+      ctx.clearRect(0, 0, width, height);
+      for (const d of drops) {
+        d.fall();
+        d.draw();
+      }
+      requestAnimationFrame(animateRain);
+    }
+    animateRain();
+    // ————— Fin lluvia —————
+
+    // ————— Código original de fotos y mensajes —————
+    const fotos = [
+      'imagenes/ella_1.jpg',
+      'imagenes/ella_2.jpg',
+      'imagenes/soy_medica.jpg',
+      'imagenes/abus.jpg',
+      'imagenes/gabi.jpg',
+      'imagenes/familia.jpg'
+    ];
+    const mensajes = [
+      "Tu título es la consecuencia lógica de tu esfuerzo y talento",
+      "Siempre dije que eras distinta. ¡Lo lograste!",
+      "¡Sos única!",
+      "Tu compromiso y sacrificio hoy tienen su recompensa",
+      "¡Sos grosa y brillante, mas que merecido el título!",
+      "👩‍⚕️", "🩺", "🏥","👩‍⚕️", "🩺", "🏥",
+      "¡Felicidades, doctora! Tu esfuerzo y dedicación brillan hoy más que nunca",
+      "🫶",
+      "👏","👏"
+    ];
+
+    const Nfotos    = fotos.length * 3;
+    const Nmensajes = mensajes.length * 2;
+    const total     = Nfotos + Nmensajes;
+    const offset       = 300;
+    const screenWidth  = window.innerWidth  + offset * 2;
+    const screenHeight = window.innerHeight + offset * 2;
+
+    for (let i = 0; i < total; i++) {
+      if (i < Nfotos) {
+        const img = document.createElement('img');
+        img.src = fotos[i % fotos.length];
+        img.className = 'foto';
+        document.body.appendChild(img);
+        animar(img, 0.5, 0.7);
+      } else {
+        const div = document.createElement('div');
+        div.textContent = mensajes[(i - Nfotos) % mensajes.length];
+        div.className = 'mensaje';
+        document.body.appendChild(div);
+        animar(div, 1.0, 1.3);
+      }
+    }
+
+    function animar(el, scaleMin, scaleMax) {
+      const dur = 14000 + Math.random() * 6000;
+      const startX = Math.random() * screenWidth  - offset;
+      const startY = Math.random() * screenHeight - offset;
+      const endX   = Math.random() * screenWidth  - offset;
+      const endY   = Math.random() * screenHeight - offset;
+
+      el.style.transform = `translate3d(${startX}px, ${startY}px, -200px) scale(${scaleMin})`;
+      el.animate([
+        { transform: `translate3d(${startX}px, ${startY}px, -200px) scale(${scaleMin})`, opacity: 0 },
+        { transform: `translate3d(${(startX+endX)/2}px, ${(startY+endY)/2}px, 0px) scale(${(scaleMin+scaleMax)/2})`, opacity: 1 },
+        { transform: `translate3d(${endX}px, ${endY}px, 200px) scale(${scaleMax})`, opacity: 0 }
+      ], {
+        duration: dur,
+        iterations: Infinity,
+        delay: Math.random() * 2000,
+        easing: 'ease-in-out'
+      });
+    }
+    // ————— Fin código original —————
+  </script>
+</body>
+</html>
