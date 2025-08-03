@@ -10,27 +10,23 @@
       overflow: hidden;
     }
 
-    /* Canvas de estrellas por detrás */
     #star-canvas {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      pointer-events: none; /* no interfiere con clics */
+      pointer-events: none;
       z-index: 1;
     }
 
     body {
-      /* Fallback sólido */
-      background-color: #0d0d2b; 
-      /* Opcional: un degradado sutil de noche */
+      background-color: #0d0d2b;
       background-image: linear-gradient(180deg, #0d0d2b 0%, #11002b 100%);
       background-size: 300% 300%;
       animation: gradientBG 30s ease infinite;
-
       perspective: 800px;
-      z-index: 2; /* fotos/mensajes por encima del canvas */
+      z-index: 2;
     }
 
     .foto {
@@ -63,11 +59,25 @@
   </style>
 </head>
 <body>
-  <!-- Canvas para el cielo estrellado -->
+
+  <!-- 🎵 Audio en loop -->
+  <audio id="musica" autoplay loop muted>
+    <source src="audio/anewbeginning.mp3" type="audio/mpeg">
+  </audio>
+
+  <!-- 🎯 Script para activar el sonido al primer clic -->
+  <script>
+    document.body.addEventListener('click', () => {
+      const audio = document.getElementById('musica');
+      audio.muted = false;
+      audio.play();
+    }, { once: true });
+  </script>
+
+  <!-- 🌌 Canvas de estrellas -->
   <canvas id="star-canvas"></canvas>
 
   <script>
-    // ————— Animación del cielo estrellado —————
     const canvas = document.getElementById('star-canvas');
     const ctx = canvas.getContext('2d');
     let w, h;
@@ -78,7 +88,6 @@
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
-    // Generamos estrellas con posición, tamaño y velocidad de parpadeo
     const stars = [];
     const numStars = 200;
     for (let i = 0; i < numStars; i++) {
@@ -94,7 +103,6 @@
     function drawStars() {
       ctx.clearRect(0, 0, w, h);
       for (const s of stars) {
-        // Actualiza alpha para simular parpadeo
         s.alpha += s.delta;
         if (s.alpha <= 0 || s.alpha >= 1) s.delta *= -1;
 
@@ -106,9 +114,7 @@
       requestAnimationFrame(drawStars);
     }
     drawStars();
-    // ————— Fin cielo estrellado —————
 
-    // ————— Fotos y mensajes —————
     const fotos = [
       'imagenes/ella_1.jpg',
       'imagenes/ella_2.jpg',
@@ -169,7 +175,6 @@
         easing: 'ease-in-out'
       });
     }
-    // ————— Fin fotos y mensajes —————
   </script>
 </body>
 </html>
