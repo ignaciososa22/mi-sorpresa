@@ -10,20 +10,27 @@
       overflow: hidden;
     }
 
+    /* Canvas de estrellas por detrás */
+    #star-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none; /* no interfiere con clics */
+      z-index: 1;
+    }
+
     body {
       /* Fallback sólido */
-      background-color: #75b9ca;
-
-      /* Gradiente pastel encima */
-      background-image: linear-gradient(135deg,
-                        #a8b8a9 0%,    /* verde menta suave */      
-                        #4338a1 50%    /* azul muy suave */
-                      );
+      background-color: #0d0d2b; 
+      /* Opcional: un degradado sutil de noche */
+      background-image: linear-gradient(180deg, #0d0d2b 0%, #11002b 100%);
       background-size: 300% 300%;
       animation: gradientBG 30s ease infinite;
 
       perspective: 800px;
-      z-index: 1;
+      z-index: 2; /* fotos/mensajes por encima del canvas */
     }
 
     .foto {
@@ -33,7 +40,7 @@
       object-fit: cover;
       border-radius: 8px;
       box-shadow: 0 0 12px rgba(0,0,0,0.4);
-      z-index: 2;
+      z-index: 3;
     }
 
     .mensaje {
@@ -41,22 +48,66 @@
       font-weight: bold;
       font-family: sans-serif;
       font-size: 2em;
-      color: #7c1d94;
+      color: #ad4db9;
       text-shadow: 0 0 8px rgba(0,0,0,0.7);
       white-space: nowrap;
       pointer-events: none;
-      z-index: 2;
+      z-index: 3;
     }
 
     @keyframes gradientBG {
-      0%   { background-position:   0%   0%; }
+      0%   { background-position: 0%   0%; }
       50%  { background-position: 100% 100%; }
-      100% { background-position:   0%   0%; }
+      100% { background-position: 0%   0%; }
     }
   </style>
 </head>
 <body>
+  <!-- Canvas para el cielo estrellado -->
+  <canvas id="star-canvas"></canvas>
+
   <script>
+    // ————— Animación del cielo estrellado —————
+    const canvas = document.getElementById('star-canvas');
+    const ctx = canvas.getContext('2d');
+    let w, h;
+    function resizeCanvas() {
+      w = canvas.width = window.innerWidth;
+      h = canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    // Generamos estrellas con posición, tamaño y velocidad de parpadeo
+    const stars = [];
+    const numStars = 200;
+    for (let i = 0; i < numStars; i++) {
+      stars.push({
+        x: Math.random() * w,
+        y: Math.random() * h,
+        radius: Math.random() * 1.2 + 0.3,
+        alpha: Math.random(),
+        delta: (Math.random() * 0.02) + 0.005
+      });
+    }
+
+    function drawStars() {
+      ctx.clearRect(0, 0, w, h);
+      for (const s of stars) {
+        // Actualiza alpha para simular parpadeo
+        s.alpha += s.delta;
+        if (s.alpha <= 0 || s.alpha >= 1) s.delta *= -1;
+
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.radius, 0, 2 * Math.PI);
+        ctx.fillStyle = `rgba(255,255,255,${s.alpha})`;
+        ctx.fill();
+      }
+      requestAnimationFrame(drawStars);
+    }
+    drawStars();
+    // ————— Fin cielo estrellado —————
+
     // ————— Fotos y mensajes —————
     const fotos = [
       'imagenes/ella_1.jpg',
@@ -101,12 +152,11 @@
     }
 
     function animar(el, scaleMin, scaleMax) {
-      const dur = 18000 + Math.random() * 9000;
-      const startX = Math.random() * screenWidth  - offset;
-      const startY = Math.random() * screenHeight - offset;
-      const endX   = Math.random() * screenWidth  - offset;
-      const endY   = Math.random() * screenHeight - offset;
-
+      const dur      = 20000 + Math.random() * 10000;
+      const startX   = Math.random() * screenWidth  - offset;
+      const startY   = Math.random() * screenHeight - offset;
+      const endX     = Math.random() * screenWidth  - offset;
+      const endY     = Math.random() * screenHeight - offset;
       el.style.transform = `translate3d(${startX}px, ${startY}px, -200px) scale(${scaleMin})`;
       el.animate([
         { transform: `translate3d(${startX}px, ${startY}px, -200px) scale(${scaleMin})`, opacity: 0 },
